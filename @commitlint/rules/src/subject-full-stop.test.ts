@@ -7,6 +7,7 @@ const messages = {
 	without: `test: subject\n`,
 	standardScopeWith: `type(scope): subject.\n`,
 	nonStandardScopeWith: 'type.scope: subject.\n',
+	tripleDotMessage: 'test: subject ends with triple dot...'
 };
 
 const parsed = {
@@ -15,6 +16,7 @@ const parsed = {
 	without: parse(messages.without),
 	standardScopeWith: parse(messages.standardScopeWith),
 	nonStandardScopeWith: parse(messages.nonStandardScopeWith),
+	tripleDotMessage: parse(messages.tripleDotMessage)
 };
 
 test('empty against "always" should succeed', async () => {
@@ -70,5 +72,11 @@ test('commit message title with non standard scope and full-stop against "never 
 		'.'
 	);
 	const expected = false;
+	expect(actual).toEqual(expected);
+});
+
+test('commit title ends with triple dot against "never ." should succeed', async () => {
+	const [actual] = subjectFullStop(await parsed.tripleDotMessage, 'never', '.');
+	const expected = true;
 	expect(actual).toEqual(expected);
 });
