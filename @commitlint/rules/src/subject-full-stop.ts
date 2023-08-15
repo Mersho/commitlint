@@ -15,18 +15,20 @@ export const subjectFullStop: SyncRule<string> = (
 
 	const negated = when === 'never';
 	let hasStop = null;
+	let success = null;
 
-	if(value !== '.')
+	if(input.endsWith('..'))
 	{
-		hasStop = input[input.length - 1] === value;
+		success = true;
 	}
 	else
 	{
-		hasStop = input.endsWith(".") && !input.endsWith("..");
+		hasStop = input[input.length - 1] === value;
+		success = negated ? !hasStop : hasStop
 	}
 
 	return [
-		negated ? !hasStop : hasStop,
+		success,
 		message(['subject', negated ? 'may not' : 'must', 'end with full stop']),
 	];
 };
