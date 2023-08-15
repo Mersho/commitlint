@@ -14,7 +14,16 @@ export const subjectFullStop: SyncRule<string> = (
 	const input = parsed.header;
 
 	const negated = when === 'never';
-	const hasStop = input[input.length - 1] === value;
+	let hasStop = null;
+
+	if(value !== '.')
+	{
+		hasStop = input[input.length - 1] === value;
+	}
+	else
+	{
+		hasStop = input.endsWith(".") && !input.endsWith("..");
+	}
 
 	return [
 		negated ? !hasStop : hasStop,
