@@ -80,3 +80,9 @@ test('commit title ends with triple dot against "never ." should succeed', async
 	const expected = true;
 	expect(actual).toEqual(expected);
 });
+
+test('commit title ends with triple dot against "always ." should succeed', async () => {
+	const [actual] = subjectFullStop(await parsed.tripleDotMessage, 'always', '.');
+	const expected = true;
+	expect(actual).toEqual(expected);
+});
