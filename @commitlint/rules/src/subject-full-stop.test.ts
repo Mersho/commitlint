@@ -7,6 +7,7 @@ const messages = {
 	without: `test: subject\n`,
 	standardScopeWith: `type(scope): subject.\n`,
 	nonStandardScopeWith: 'type.scope: subject.\n',
+	withEllipsis: `test: subject...\n`,
 };
 
 const parsed = {
@@ -64,6 +65,26 @@ test('commit message title with standard scope and full-stop against "never ." s
 });
 
 test('commit message title with non standard scope and full-stop against "never ." should fail', async () => {
+	const [actual] = subjectFullStop(
+		await parsed.nonStandardScopeWith,
+		'never',
+		'.'
+	);
+	const expected = false;
+	expect(actual).toEqual(expected);
+});
+
+test('commit message title with ellipsis against "always ." should succeed', async () => {
+	const [actual] = subjectFullStop(
+		await parsed.nonStandardScopeWith,
+		'always',
+		'.'
+	);
+	const expected = true;
+	expect(actual).toEqual(expected);
+});
+
+test('commit message title with ellipsis against "never ." should fail', async () => {
 	const [actual] = subjectFullStop(
 		await parsed.nonStandardScopeWith,
 		'never',
