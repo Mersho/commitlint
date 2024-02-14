@@ -2,6 +2,7 @@ import execa, {ExecaError} from 'execa';
 import load from '@commitlint/load';
 import lint from '@commitlint/lint';
 import read from '@commitlint/read';
+import {simpleGit} from 'simple-git';
 import isFunction from 'lodash.isfunction';
 import resolveFrom from 'resolve-from';
 import resolveGlobal from 'resolve-global';
@@ -213,16 +214,39 @@ async function main(args: MainArgs): Promise<void> {
 		throw err;
 	}
 
-	const input = await (fromStdin
-		? stdin()
-		: read({
-				to: flags.to,
-				from: flags.from,
-				edit: flags.edit,
-				cwd: flags.cwd,
-				gitLogArgs: flags['git-log-args'],
-		  }));
+	if (flags.from != null && flags.to != null && flags.from === flags.to) {
+		const err = new CliError(
+			'Please use a different commit hash for --from and --to, not the same. (Or use the --last flag for analyzing just the last commit.)',
+			pkg.name
+		);
+		yargs.showHelp('log');
+		console.log(err.message);
+		throw err;
+	}
 
+	let input;
+
+	if (flags.last != null) {
+		const log = await simpleGit({baseDir: flags.cwd}).log({
+			maxCount: 1,
+		});
+		input = '';
+		if (log.latest) {
+			input = log.latest.message;
+		} else {
+			throw new CliError('No commits found in the repository.', pkg.name);
+		}
+	} else {
+		input = await (fromStdin
+			? stdin()
+			: read({
+					to: flags.to,
+					from: flags.from,
+					edit: flags.edit,
+					cwd: flags.cwd,
+					gitLogArgs: flags['git-log-args'],
+			  }));
+	}
 	const messages = (Array.isArray(input) ? input : [input])
 		.filter((message) => typeof message === 'string')
 		.filter((message) => message.trim() !== '')
