@@ -82,6 +82,11 @@ const cli = yargs
 				"additional git log arguments as space separated string, example '--first-parent --cherry-pick'",
 			type: 'string',
 		},
+		last: {
+			alias: 'l',
+			description: 'just analyze the last commit; applies if edit=false',
+			type: 'boolean',
+		},
 		format: {
 			alias: 'o',
 			description: 'output format of the results',
@@ -195,6 +200,19 @@ async function main(args: MainArgs): Promise<void> {
 
 	const fromStdin = checkFromStdin(raw, flags);
 
+	if (
+		flags.last != null &&
+		(flags.from != null || flags.to != null || flags.edit)
+	) {
+		const err = new CliError(
+			'Please use the --last flag alone. The --last flag should not be used with --to or --from or --edit.',
+			pkg.name
+		);
+		yargs.showHelp('log');
+		console.log(err.message);
+		throw err;
+	}
+
 	const input = await (fromStdin
 		? stdin()
 		: read({
@@ -212,7 +230,7 @@ async function main(args: MainArgs): Promise<void> {
 
 	if (messages.length === 0 && !checkFromRepository(flags)) {
 		const err = new CliError(
-			'[input] is required: supply via stdin, or --env or --edit or --from and --to',
+			'[input] is required: supply via stdin, or --env or --edit or --last or --from and --to',
 			pkg.name
 		);
 		yargs.showHelp('log');
@@ -355,7 +373,11 @@ function checkFromEdit(flags: CliFlags): boolean {
 }
 
 function checkFromHistory(flags: CliFlags): boolean {
-	return typeof flags.from === 'string' || typeof flags.to === 'string';
+	return (
+		typeof flags.from === 'string' ||
+		typeof flags.to === 'string' ||
+		typeof flags.last === 'boolean'
+	);
 }
 
 function normalizeFlags(flags: CliFlags): CliFlags {
